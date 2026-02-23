@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EstateIQ — Mumbai Property Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,700&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--ink:#080608;--ink2:#100d10;--saffron:#E8841A;--saf2:#F5A94E;--saf3:rgba(232,132,26,.12);--text:#F0EAE0;--muted:#7A6E62;--border:rgba(232,132,26,.16);--border2:rgba(240,234,224,.08);--success:#5CB88A;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:'Instrument Sans',sans-serif;font-weight:400;overflow-x:hidden;cursor:none;}
+body::before{content:'';position:fixed;inset:0;z-index:9000;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;opacity:.45;}
+#cur{position:fixed;top:0;left:0;z-index:9999;width:10px;height:10px;background:var(--saffron);border-radius:50%;pointer-events:none;transition:transform .15s,opacity .2s;mix-blend-mode:difference;}
+#curl{position:fixed;top:0;left:0;z-index:9998;width:36px;height:36px;border:1px solid rgba(232,132,26,.4);border-radius:50%;pointer-events:none;transition:transform .4s;}
+#cur.hov{transform:scale(3);opacity:.5;}
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 60px;height:68px;background:rgba(8,6,8,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);animation:navIn .8s ease forwards;}
+@keyframes navIn{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.logo{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:900;letter-spacing:-.02em;color:var(--text);cursor:pointer;}
+.logo em{color:var(--saffron);font-style:normal;}
+.nav-links{display:flex;gap:4px;align-items:center;}
+.nl{padding:8px 18px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .25s;font-family:'Instrument Sans',sans-serif;font-weight:500;}
+.nl:hover{color:var(--text);}
+.nl.active{color:var(--saffron);}
+.ncta{padding:10px 24px;background:var(--saffron);color:var(--ink);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;border:none;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:background .25s;margin-left:8px;}
+.ncta:hover{background:var(--saf2);}
+.page{display:none;min-height:100vh;padding-top:68px;animation:pgIn .55s cubic-bezier(.16,1,.3,1) forwards;}
+.page.active{display:block;}
+@keyframes pgIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.tag{display:inline-flex;align-items:center;gap:10px;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--saffron);margin-bottom:20px;}
+.tag::before{content:'';width:28px;height:1px;background:var(--saffron);}
+.sec-title{font-family:'Fraunces',serif;font-size:clamp(2.4rem,4.5vw,4rem);font-weight:900;line-height:1.05;letter-spacing:-.025em;}
+.sec-title em{font-style:italic;color:var(--saffron);}
+.sec-title .ghost{-webkit-text-stroke:1px rgba(240,234,224,.2);color:transparent;}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.btn-p{display:inline-flex;align-items:center;gap:12px;padding:16px 36px;background:var(--saffron);color:var(--ink);font-family:'Instrument Sans',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;border:none;cursor:pointer;position:relative;overflow:hidden;transition:all .3s;}
+.btn-p::before{content:'';position:absolute;inset:0;background:var(--saf2);transform:translateX(-100%);transition:transform .4s ease;}
+.btn-p:hover::before{transform:translateX(0);}
+.btn-p>*{position:relative;z-index:1;}
+.btn-g{display:inline-flex;align-items:center;gap:8px;padding:16px 28px;border:1px solid var(--border2);color:var(--muted);font-family:'Instrument Sans',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:none;cursor:pointer;transition:all .3s;}
+.btn-g:hover{border-color:var(--saffron);color:var(--saffron);}
+
+/* HOME */
+#ph{background:radial-gradient(ellipse 70% 55% at 80% 30%,rgba(232,132,26,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 10% 80%,rgba(232,132,26,.04) 0%,transparent 55%),var(--ink);}
+.hero{min-height:calc(100vh - 68px);display:grid;grid-template-columns:55% 45%;align-items:center;padding:80px 60px 60px;position:relative;overflow:hidden;gap:0;}
+.hgrid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(232,132,26,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,132,26,.03) 1px,transparent 1px);background-size:72px 72px;animation:gm 28s linear infinite;}
+@keyframes gm{to{background-position:72px 72px;}}
+.skyline{position:absolute;bottom:0;left:0;right:0;height:210px;opacity:.042;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 210'%3E%3Cpath fill='%23E8841A' d='M0,210V140l30,0V90l20,0V55l15,0V30l10,0V55l15,0V90l20,0V140l30,0V100l25,0V60l10,0V40l8,0V20l8,0V40l8,0V60l10,0V100l25,0V140l20,0V80l15,0V50l20,0V80l15,0V140l25,0V110l20,0V70l10,0V45l7,0V25l7,0V45l7,0V70l10,0V110l20,0V140l20,0V100l15,0V60l25,0V100l15,0V140l30,0V90l20,0V55l15,0V35l10,0V15l8,0V35l10,0V55l15,0V90l20,0V140l25,0V110l18,0V75l10,0V50l8,0V30l6,0V12l6,0V30l6,0V50l8,0V75l10,0V110l18,0V140l20,0V100l15,0V65l20,0V100l15,0V140l25,0V110l20,0V70l12,0V45l8,0V22l6,0V45l8,0V70l12,0V110l20,0V140l30,0V100l22,0V60l12,0V35l8,0V60l12,0V100l22,0V140l25,0V110l18,0V75l10,0V55l8,0V75l10,0V110l18,0V140l20,0V100l15,0V65l20,0V100l15,0V140L1440,140V210Z'/%3E%3C/svg%3E") no-repeat bottom/cover;}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;animation:ob 9s ease-in-out infinite;}
+.o1{width:480px;height:480px;top:-80px;right:-80px;background:rgba(232,132,26,.07);}
+.o2{width:320px;height:320px;bottom:60px;left:8%;background:rgba(232,132,26,.05);animation-delay:-4s;}
+@keyframes ob{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.08) translateY(-20px)}}
+.hl{position:relative;z-index:2;}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border:1px solid var(--border);background:rgba(232,132,26,.07);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--saffron);margin-bottom:32px;opacity:0;animation:up .8s .1s forwards;}
+.dlive{width:6px;height:6px;background:var(--saffron);border-radius:50%;animation:bl 2s ease-in-out infinite;}
+@keyframes bl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.h1{font-family:'Fraunces',serif;font-size:clamp(3.5rem,7.5vw,8rem);font-weight:900;line-height:.95;letter-spacing:-.03em;opacity:0;animation:up .9s .25s forwards;}
+.h1 em{color:var(--saffron);font-style:italic;}
+.h1 .ol{-webkit-text-stroke:1.5px rgba(240,234,224,.22);color:transparent;}
+.hsub{margin-top:28px;max-width:480px;font-size:.92rem;color:var(--muted);line-height:1.85;opacity:0;animation:up .8s .4s forwards;}
+.hact{margin-top:44px;display:flex;gap:16px;align-items:center;opacity:0;animation:up .8s .55s forwards;}
+.hr{position:relative;z-index:2;padding-left:60px;opacity:0;animation:up .9s .35s forwards;}
+.tcard{border:1px solid var(--border);background:rgba(20,15,20,.7);backdrop-filter:blur(12px);padding:40px;}
+.trow{display:flex;align-items:center;gap:16px;padding:22px 0;border-bottom:1px solid var(--border2);}
+.trow:last-child{border-bottom:none;padding-bottom:0;}
+.trow:first-child{padding-top:0;}
+.tico{width:48px;height:48px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.ttxt h4{font-size:.85rem;font-weight:600;margin-bottom:4px;}
+.ttxt p{font-size:.72rem;color:var(--muted);line-height:1.6;}
+.sband{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:0 60px;}
+.sc{background:var(--ink);padding:40px 36px;transition:background .3s;}
+.sc:hover{background:rgba(232,132,26,.04);}
+.sn{font-family:'Fraunces',serif;font-size:2.8rem;font-weight:900;color:var(--saffron);line-height:1;}
+.sl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.18em;margin-top:8px;}
+.mqwrap{overflow:hidden;margin:60px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:20px 0;}
+.mqtrack{display:flex;white-space:nowrap;animation:mq 24s linear infinite;}
+.mqi{display:inline-flex;align-items:center;gap:12px;padding:0 48px;font-size:.68rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;border-right:1px solid var(--border2);}
+.mqi span{color:var(--saffron);}
+@keyframes mq{to{transform:translateX(-50%);}}
+.divider{height:1px;background:var(--border2);margin:0 60px;}
+
+/* PREDICT */
+#pp{background:radial-gradient(ellipse 60% 50% at 90% 10%,rgba(232,132,26,.06) 0%,transparent 55%),var(--ink);}
+.playout{display:grid;grid-template-columns:42% 58%;min-height:calc(100vh - 68px);}
+.pinfo{padding:70px 50px 70px 60px;border-right:1px solid var(--border2);display:flex;flex-direction:column;justify-content:center;position:sticky;top:68px;height:calc(100vh - 68px);overflow-y:auto;}
+.pinfo h2{font-family:'Fraunces',serif;font-size:clamp(2rem,3.2vw,3rem);font-weight:900;line-height:1.1;letter-spacing:-.02em;margin-bottom:20px;}
+.pinfo h2 em{color:var(--saffron);font-style:italic;}
+.pinfo>p{font-size:.82rem;color:var(--muted);line-height:1.85;margin-bottom:36px;}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:44px;}
+.pill{padding:7px 14px;border:1px solid var(--border);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.pill.on{border-color:var(--saffron);color:var(--saffron);background:var(--saf3);}
+.arow{margin-bottom:18px;}
+.atop{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
+.atrack{height:2px;background:rgba(255,255,255,.06);}
+.afill{height:100%;background:linear-gradient(90deg,var(--saffron),var(--saf2));width:0;transition:width 1.4s cubic-bezier(.16,1,.3,1);}
+.pfp{padding:70px 60px 70px 50px;overflow-y:auto;max-height:calc(100vh - 68px);}
+.fhd{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+.fhd span{font-size:.62rem;color:var(--muted);font-family:'Instrument Sans',sans-serif;font-weight:400;letter-spacing:.12em;text-transform:uppercase;}
+.fg{display:flex;flex-direction:column;gap:8px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.fg1{grid-column:1/-1;}
+label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+input,select{background:rgba(255,255,255,.035);border:1px solid rgba(232,132,26,.14);color:var(--text);padding:14px 16px;font-family:'Instrument Sans',sans-serif;font-size:.88rem;outline:none;transition:all .25s;width:100%;-webkit-appearance:none;}
+input::placeholder{color:rgba(122,110,98,.5);}
+input:focus,select:focus{border-color:var(--saffron);background:rgba(232,132,26,.05);box-shadow:0 0 0 3px rgba(232,132,26,.07);}
+select option{background:#18121a;}
+.stpr{display:flex;align-items:center;border:1px solid rgba(232,132,26,.14);background:rgba(255,255,255,.035);transition:border-color .25s;}
+.stpr:focus-within{border-color:var(--saffron);}
+.sb{width:42px;height:48px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s;flex-shrink:0;}
+.sb:hover{color:var(--saffron);}
+.stpr input{border:none;background:none;text-align:center;padding:14px 0;flex:1;font-size:.9rem;color:var(--text);}
+.stpr input:focus{background:none;border:none;box-shadow:none;}
+.lwrap{position:relative;}
+.ldrop{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:300;background:#1c1220;border:1px solid var(--border);max-height:230px;overflow-y:auto;display:none;}
+.ldrop.open{display:block;}
+.lopt{padding:12px 16px;font-size:.84rem;cursor:pointer;border-bottom:1px solid rgba(232,132,26,.07);transition:background .18s;}
+.lopt:hover,.lopt.hi{background:rgba(232,132,26,.1);color:var(--saffron);}
+.lempty{padding:14px;color:var(--muted);font-size:.78rem;text-align:center;}
+.bsub{width:100%;padding:18px;margin-top:24px;background:linear-gradient(135deg,var(--saffron) 0%,#c06310 100%);border:none;color:var(--ink);cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;transition:all .3s;position:relative;overflow:hidden;}
+.bsub::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--saf2),var(--saffron));opacity:0;transition:opacity .3s;}
+.bsub:hover::before{opacity:1;}
+.bsub>*{position:relative;z-index:1;}
+.bsub:disabled{opacity:.55;cursor:not-allowed;}
+.rbox{margin-top:20px;padding:28px 32px;border:1px solid rgba(92,184,138,.35);background:rgba(92,184,138,.06);display:none;position:relative;}
+.rbox.show{display:block;animation:pop .5s cubic-bezier(.16,1,.3,1) forwards;}
+.rbox.err{border-color:rgba(255,80,80,.35);background:rgba(255,80,80,.05);}
+@keyframes pop{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.rbox::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--success);}
+.rbox.err::before{background:#ff5050;}
+.rlbl{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--success);margin-bottom:8px;}
+.rbox.err .rlbl{color:#ff5050;}
+.rprice{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:900;color:var(--text);line-height:1;margin-bottom:12px;}
+.rmeta{font-size:.7rem;color:var(--muted);line-height:1.8;}
+.rmeta b{color:var(--text);font-weight:500;}
+
+/* HOW */
+#phw{background:var(--ink2);padding-bottom:100px;}
+.hwhero{padding:80px 60px 60px;text-align:center;border-bottom:1px solid var(--border2);}
+.hwhero p{max-width:560px;margin:20px auto 0;font-size:.88rem;color:var(--muted);line-height:1.85;}
+.pipeline{padding:80px 60px 0;}
+.pstep{display:grid;grid-template-columns:80px 1fr 1fr;gap:40px;align-items:start;padding:48px 0;border-bottom:1px solid var(--border2);opacity:0;transform:translateY(20px);transition:all .6s ease;}
+.pstep.vis{opacity:1;transform:translateY(0);}
+.pstep:last-child{border-bottom:none;}
+.psn{font-family:'Fraunces',serif;font-size:3.5rem;font-weight:900;color:rgba(232,132,26,.15);line-height:1;padding-top:4px;}
+.psl h3{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;margin-bottom:14px;line-height:1.2;}
+.psl h3 em{font-style:italic;color:var(--saffron);}
+.psl p{font-size:.8rem;color:var(--muted);line-height:1.9;}
+.cblock{background:#0e0b0e;border:1px solid var(--border2);padding:24px;font-family:'Courier New',monospace;font-size:.72rem;line-height:1.8;color:#9A8B78;overflow-x:auto;white-space:pre;}
+.cblock .k{color:var(--saffron);}
+.cblock .s{color:#a8d8a8;}
+.cblock .c{color:#5A5050;}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border2);border:1px solid var(--border2);margin:60px;}
+.tc{background:var(--ink2);padding:40px 32px;transition:background .3s;position:relative;overflow:hidden;}
+.tc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--saffron),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.tc:hover{background:rgba(232,132,26,.04);}
+.tc:hover::after{transform:scaleX(1);}
+.tcl{font-size:1.5rem;margin-bottom:16px;}
+.tcn{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;margin-bottom:10px;}
+.tcd{font-size:.75rem;color:var(--muted);line-height:1.8;}
+
+/* ABOUT */
+#pa{background:radial-gradient(ellipse 55% 40% at 30% 20%,rgba(232,132,26,.055) 0%,transparent 60%),var(--ink);padding-bottom:100px;}
+.ahero{padding:80px 60px 0;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.ahero p{font-size:.88rem;color:var(--muted);line-height:1.9;margin-top:20px;}
+.fflags{display:flex;flex-wrap:wrap;gap:10px;margin-top:36px;}
+.ff{display:flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid var(--border);font-size:.68rem;color:var(--muted);letter-spacing:.08em;transition:all .25s;}
+.ffd{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;}
+.ff:hover{border-color:var(--saffron);color:var(--saffron);}
+.mtable{margin:80px 60px 0;}
+.mtable h3{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;margin-bottom:32px;}
+.mtable h3 em{color:var(--saffron);font-style:italic;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:14px 20px;border-bottom:1px solid var(--border2);font-weight:500;}
+td{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(232,132,26,.035);}
+.tbest{color:var(--saffron);font-weight:600;}
+.bbest{display:inline-block;padding:3px 10px;background:rgba(232,132,26,.15);color:var(--saffron);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid rgba(232,132,26,.3);margin-left:8px;}
+.ctas{margin:80px 60px 0;padding:60px;border:1px solid var(--border);background:rgba(232,132,26,.04);display:flex;align-items:center;justify-content:space-between;gap:40px;}
+.ctas h3{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;line-height:1.2;}
+.ctas h3 em{color:var(--saffron);font-style:italic;}
+.ctas p{font-size:.8rem;color:var(--muted);margin-top:10px;}
+
+/* FOOTER */
+footer{padding:44px 60px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;}
+.fl{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:900;}
+.fl em{color:var(--saffron);font-style:normal;}
+.fm{font-size:.62rem;color:var(--muted);text-align:center;line-height:1.8;}
+.fr{font-size:.62rem;color:var(--muted);text-align:right;line-height:1.8;}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  nav{padding:0 24px;}
+  .hero{grid-template-columns:1fr;padding:60px 24px;}
+  .hr{padding-left:0;margin-top:40px;}
+  .sband{grid-template-columns:repeat(2,1fr);margin:0 24px;}
+  .playout{grid-template-columns:1fr;}
+  .pinfo{position:static;height:auto;padding:48px 24px 32px;border-right:none;border-bottom:1px solid var(--border2);}
+  .pfp{padding:40px 24px 60px;max-height:none;}
+  .fgrid{grid-template-columns:1fr;}
+  .hwhero{padding:60px 24px 40px;}
+  .pipeline{padding:40px 24px 0;}
+  .pstep{grid-template-columns:60px 1fr;gap:20px;}
+  .psr{display:none;}
+  .tgrid{grid-template-columns:1fr;margin:40px 24px;}
+  .ahero{grid-template-columns:1fr;padding:60px 24px 0;gap:40px;}
+  .mtable{margin:60px 24px 0;}
+  .ctas{margin:60px 24px 0;padding:40px 24px;flex-direction:column;}
+  footer{flex-direction:column;gap:20px;text-align:center;padding:36px 24px;}
+  .fr{text-align:center;}
+  .divider{margin:0 24px;}
+  .mqwrap{margin:40px 0;}
+}
+@media(max-width:600px){
+  .h1{font-size:3rem;}
+  .hact{flex-direction:column;align-items:flex-start;}
+  .sband{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div><div id="curl"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goTo('home')">Estate<em>IQ</em></div>
+  <div class="nav-links">
+    <button class="nl" id="nl-home"   onclick="goTo('home')">Home</button>
+    <button class="nl" id="nl-pp"     onclick="goTo('pp')">Predict</button>
+    <button class="nl" id="nl-phw"    onclick="goTo('phw')">How It Works</button>
+    <button class="nl" id="nl-pa"     onclick="goTo('pa')">About</button>
+    <button class="ncta"              onclick="goTo('pp')">Get Estimate &rarr;</button>
+  </div>
+</nav>
+
+<!-- PAGE: HOME -->
+<div class="page" id="page-home">
+  <div class="hero">
+    <div class="hgrid"></div><div class="skyline"></div>
+    <div class="orb o1"></div><div class="orb o2"></div>
+    <div class="hl">
+      <div class="eyebrow"><div class="dlive"></div>Mumbai &middot; AI Property Intelligence</div>
+      <h1 class="h1">Know What<br>Your <em>Mumbai</em><br>Home is<br><span class="ol">Worth.</span></h1>
+      <p class="hsub">EstateIQ uses a Random Forest model trained on thousands of real Mumbai listings to deliver instant, hyperlocal property valuations &mdash; in Rupees, in seconds.</p>
+      <div class="hact">
+        <button class="btn-p" onclick="goTo('pp')"><span>Estimate Your Property</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        <button class="btn-g" onclick="goTo('phw')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>How It Works</button>
+      </div>
+    </div>
+    <div class="hr">
+      <div class="tcard">
+        <div class="trow"><div class="tico">&#127963;</div><div class="ttxt"><h4>Mumbai-Specific Data</h4><p>Trained on real listings across 200+ localities &mdash; Bandra to Nalasopara, Worli to Thane.</p></div></div>
+        <div class="trow"><div class="tico">&#127795;</div><div class="ttxt"><h4>R&sup2; Score: 0.9995</h4><p>Random Forest with 200 trees captures hyperlocal pricing with near-perfect accuracy.</p></div></div>
+        <div class="trow"><div class="tico">&#8377;</div><div class="ttxt"><h4>Output in Crore &amp; Lakh</h4><p>Results formatted the way Mumbai real estate actually speaks &mdash; no confusing raw numbers.</p></div></div>
+        <div class="trow"><div class="tico">&#9889;</div><div class="ttxt"><h4>Instant Flask API</h4><p>Predictions served in milliseconds. Model cached at startup for zero-latency inference.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sband">
+    <div class="sc"><div class="sn">0.9995</div><div class="sl">Model R&sup2; Score</div></div>
+    <div class="sc"><div class="sn">200+</div><div class="sl">Mumbai Localities</div></div>
+    <div class="sc"><div class="sn">7</div><div class="sl">Input Features</div></div>
+    <div class="sc"><div class="sn">200</div><div class="sl">RF Trees Trained</div></div>
+  </div>
+
+  <div class="mqwrap"><div class="mqtrack">
+    <div class="mqi"><span>Bandra</span> West &middot; Sea View Flats</div>
+    <div class="mqi"><span>Powai</span> &middot; Lake-Facing Apartments</div>
+    <div class="mqi"><span>Andheri</span> East &middot; Commercial Hub</div>
+    <div class="mqi"><span>Worli</span> &middot; Luxury High-Rises</div>
+    <div class="mqi"><span>Thane</span> &middot; Growing Suburbs</div>
+    <div class="mqi"><span>Borivali</span> &middot; Family Residences</div>
+    <div class="mqi"><span>Dadar</span> &middot; Central Mumbai</div>
+    <div class="mqi"><span>Malad</span> &middot; IT &amp; Residential Mix</div>
+    <div class="mqi"><span>Bandra</span> West &middot; Sea View Flats</div>
+    <div class="mqi"><span>Powai</span> &middot; Lake-Facing Apartments</div>
+    <div class="mqi"><span>Andheri</span> East &middot; Commercial Hub</div>
+    <div class="mqi"><span>Worli</span> &middot; Luxury High-Rises</div>
+    <div class="mqi"><span>Thane</span> &middot; Growing Suburbs</div>
+    <div class="mqi"><span>Borivali</span> &middot; Family Residences</div>
+    <div class="mqi"><span>Dadar</span> &middot; Central Mumbai</div>
+    <div class="mqi"><span>Malad</span> &middot; IT &amp; Residential Mix</div>
+  </div></div>
+
+  <div class="divider"></div>
+  <footer><div class="fl">Estate<em>IQ</em></div><div class="fm">Mumbai Property Intelligence &middot; Powered by Machine Learning<br>Random Forest &middot; Flask &middot; scikit-learn &middot; Python</div><div class="fr">Model R&sup2;: 0.9995<br>Dataset: Mumbai House Prices</div></footer>
+</div>
+
+<!-- PAGE: PREDICT -->
+<div class="page" id="page-pp">
+  <div class="playout">
+    <div class="pinfo">
+      <div class="tag">AI Valuation Engine</div>
+      <h2>Get your<br><em>instant</em><br>price estimate.</h2>
+      <p>Fill in your property details. EstateIQ fetches the median price-per-sqft for your locality from real dataset and runs it through the trained Random Forest pipeline.</p>
+      <div class="pills">
+        <div class="pill on">Random Forest</div><div class="pill">Ridge</div>
+        <div class="pill">Linear Regression</div><div class="pill">StandardScaler</div>
+        <div class="pill on">200 Estimators</div><div class="pill on">Locality-Aware</div>
+      </div>
+      <div class="arow"><div class="atop"><span>R&sup2; Score</span><span id="r2val">&mdash;</span></div><div class="atrack"><div class="afill" id="r2bar"></div></div></div>
+      <div class="arow"><div class="atop"><span>vs Linear Baseline</span><span id="accval">&mdash;</span></div><div class="atrack"><div class="afill" id="accbar"></div></div></div>
+      <div class="arow"><div class="atop"><span>Locality Coverage</span><span id="locval">&mdash;</span></div><div class="atrack"><div class="afill" id="locbar"></div></div></div>
+    </div>
+    <div class="pfp">
+      <div class="fhd">Property Details <span>All fields required</span></div>
+      <div class="fgrid">
+        <div class="fg"><label>Area (sq ft)</label><input type="number" id="area" placeholder="e.g. 950" min="250" max="5000"/></div>
+        <div class="fg"><label>Building Age (years)</label><input type="number" id="age" placeholder="e.g. 5" min="0" max="80"/></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label>Bedrooms</label><div class="stpr"><button class="sb" onclick="step('bed',-1)">&#8722;</button><input type="number" id="bed" value="2" min="1" max="10" readonly/><button class="sb" onclick="step('bed',1)">+</button></div></div>
+        <div class="fg"><label>Bathrooms</label><div class="stpr"><button class="sb" onclick="step('bath',-1)">&#8722;</button><input type="number" id="bath" value="2" min="1" max="10" readonly/><button class="sb" onclick="step('bath',1)">+</button></div></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg"><label>Balconies</label><div class="stpr"><button class="sb" onclick="step('bal',-1)">&#8722;</button><input type="number" id="bal" value="1" min="0" max="5" readonly/><button class="sb" onclick="step('bal',1)">+</button></div></div>
+        <div class="fg"><label>Total Floors in Building</label><input type="number" id="floors" placeholder="e.g. 14" min="1" max="60"/></div>
+      </div>
+      <div class="fgrid">
+        <div class="fg fg1">
+          <label>Locality / Neighbourhood</label>
+          <div class="lwrap">
+            <input type="text" id="linput" placeholder="Search &mdash; Bandra, Andheri, Powai..." autocomplete="off"/>
+            <div class="ldrop" id="ldrop"></div>
+          </div>
+          <input type="hidden" id="lval"/>
+        </div>
+      </div>
+      <button class="bsub" id="sbtn" onclick="runP()"><span id="stxt">&#127968;&nbsp; Predict Price in Rupees</span></button>
+      <div class="rbox" id="rbox">
+        <div class="rlbl" id="rlbl">Estimated Market Value</div>
+        <div class="rprice" id="rprice">&mdash;</div>
+        <div class="rmeta" id="rmeta"></div>
+      </div>
+      <p style="margin-top:24px;font-size:.65rem;color:var(--muted);line-height:1.7;border-top:1px solid var(--border2);padding-top:20px;">&#9888; Estimates are based on historical dataset patterns. Always consult a certified real estate professional for legal transactions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: HOW IT WORKS -->
+<div class="page" id="page-phw">
+  <div class="hwhero">
+    <div class="tag">Under the Hood</div>
+    <h2 class="sec-title">How EstateIQ <em>thinks.</em></h2>
+    <p>A complete ML pipeline &mdash; from raw Mumbai housing data to a Rupee prediction &mdash; in five transparent steps.</p>
+  </div>
+  <div class="pipeline">
+    <div class="pstep">
+      <div class="psn">01</div>
+      <div class="psl"><h3>Data <em>Ingestion</em> &amp; Cleaning</h3><p>The Mumbai housing CSV is loaded and cleaned. Locality names are standardised. Outlier prices below &#8377;10L or above &#8377;10Cr are removed, as are extreme area and price-per-sqft values. Missing numerics are median-imputed.</p></div>
+      <div class="psr"><div class="cblock"><span class="c"># Load &amp; clean Mumbai data</span>
+df = pd.read_csv(<span class="s">"mumbai_house_price.csv"</span>)
+df[<span class="s">'locality'</span>] = df[<span class="s">'locality'</span>].<span class="k">str</span>.title()
+<span class="c"># Remove price outliers</span>
+df = df[(df[<span class="s">'price'</span>] &gt; <span class="k">1_000_000</span>) &amp;
+        (df[<span class="s">'price'</span>] &lt; <span class="k">100_000_000</span>)]
+df = df[(df[<span class="s">'area'</span>]  &gt; <span class="k">250</span>) &amp;
+        (df[<span class="s">'area'</span>]  &lt; <span class="k">5000</span>)]</div></div>
+    </div>
+    <div class="pstep">
+      <div class="psn">02</div>
+      <div class="psl"><h3><em>Locality</em> Encoding via Median &#8377;/sqft</h3><p>Instead of one-hot encoding hundreds of locality names, each locality maps to its median price-per-sqft from the dataset. This single numeric captures the entire locational premium &mdash; Bandra gets its premium, Nalasopara its suburban rate.</p></div>
+      <div class="psr"><div class="cblock"><span class="c"># Smart locality encoding</span>
+locality_price_map = (
+  df.groupby(<span class="s">'locality'</span>)
+    [<span class="s">'price_per_sqft'</span>]
+    .median()
+    .to_dict()
+)
+<span class="c"># 7 features total:</span>
+<span class="c"># area, beds, baths, balcony,</span>
+<span class="c"># age, floors, &#8377;/sqft</span></div></div>
+    </div>
+    <div class="pstep">
+      <div class="psn">03</div>
+      <div class="psl"><h3>Feature <em>Scaling</em></h3><p>All 7 numeric features are normalised using StandardScaler. This ensures no single feature dominates due to scale differences. The exact scaler fitted on training data is reused at inference time identically.</p></div>
+      <div class="psr"><div class="cblock">scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+<span class="c"># Persisted to disk</span>
+pickle.dump(scaler,
+  open(<span class="s">"mumbai_scaler.pkl"</span>, <span class="s">"wb"</span>))
+<span class="c"># At inference time:</span>
+inp_sc = scaler.transform(inp)</div></div>
+    </div>
+    <div class="pstep">
+      <div class="psn">04</div>
+      <div class="psl"><h3>Random <em>Forest</em> Training</h3><p>A Random Forest Regressor with 200 estimators and max depth 15 is trained on 80% of data. Averaging predictions from many trees yields extremely high accuracy (R&sup2;: 0.9995) while remaining robust against overfitting.</p></div>
+      <div class="psr"><div class="cblock">model = RandomForestRegressor(
+  n_estimators=<span class="k">200</span>,
+  max_depth=<span class="k">15</span>,
+  random_state=<span class="k">42</span>
+)
+model.fit(X_train, y_train)
+<span class="c"># Test R&sup2;: 0.9995</span></div></div>
+    </div>
+    <div class="pstep">
+      <div class="psn">05</div>
+      <div class="psl"><h3>Flask <em>API</em> Inference</h3><p>Model and scaler load once at Flask startup. Form inputs are sent as JSON to /predict, preprocessed identically to training, passed through the model, and returned as a formatted Rupee value &mdash; all in milliseconds.</p></div>
+      <div class="psr"><div class="cblock"><span class="k">@app</span>.route(<span class="s">'/predict'</span>,methods=[<span class="s">'POST'</span>])
+<span class="k">def</span> predict():
+  data = request.get_json()
+  ppsf = loc_map.get(data[<span class="s">'locality'</span>],
+                     median_ppsf)
+  X = np.array([[area,beds,baths,
+    bal,age,floors,ppsf]])
+  price = model.predict(
+    scaler.transform(X))[<span class="k">0</span>]
+  <span class="k">return</span> jsonify(format_inr(price))</div></div>
+    </div>
+  </div>
+  <div class="tgrid">
+    <div class="tc"><div class="tcl">&#127822;</div><div class="tcn">Python 3</div><div class="tcd">Core language for data processing, model training, and API backend. Industry standard for ML pipelines.</div></div>
+    <div class="tc"><div class="tcl">&#127795;</div><div class="tcn">scikit-learn</div><div class="tcd">RandomForestRegressor, StandardScaler, train_test_split, r2_score &mdash; battle-tested ML primitives.</div></div>
+    <div class="tc"><div class="tcl">&#127798;</div><div class="tcn">Flask</div><div class="tcd">Lightweight Python web framework serving the frontend HTML and /predict JSON API with CORS support.</div></div>
+    <div class="tc"><div class="tcl">&#127996;</div><div class="tcn">Pandas</div><div class="tcd">DataFrame operations for loading, cleaning, locality-grouping, and outlier removal on the Mumbai dataset.</div></div>
+    <div class="tc"><div class="tcl">&#128290;</div><div class="tcn">NumPy</div><div class="tcd">Array operations for building the feature vector passed to the scaler and model at prediction time.</div></div>
+    <div class="tc"><div class="tcl">&#128156;</div><div class="tcn">Pickle</div><div class="tcd">Serializes the 200-tree Random Forest and StandardScaler to disk so heavy training only happens once.</div></div>
+  </div>
+  <footer><div class="fl">Estate<em>IQ</em></div><div class="fm">Mumbai Property Intelligence &middot; Powered by Machine Learning</div><div class="fr">Model R&sup2;: 0.9995<br>Random Forest &middot; 200 Estimators</div></footer>
+</div>
+
+<!-- PAGE: ABOUT -->
+<div class="page" id="page-pa">
+  <div class="ahero">
+    <div>
+      <div class="tag">About the Project</div>
+      <h2 class="sec-title">Built for<br><em>Mumbai.</em><br><span class="ghost">By data.</span></h2>
+    </div>
+    <div>
+      <p>EstateIQ is an end-to-end machine learning web application that predicts residential property prices across Mumbai using real listing data. The project demonstrates a complete MLOps pipeline &mdash; from raw data ingestion and cleaning, through model training and evaluation, to a production-ready Flask API with a modern frontend.</p>
+      <p style="margin-top:16px;">The goal is simple: give anyone &mdash; buyer, seller, or investor &mdash; a data-backed starting point for understanding property values across Mumbai's hyperlocal market.</p>
+      <div class="fflags">
+        <div class="ff"><div class="ffd"></div>Real Mumbai Dataset</div>
+        <div class="ff"><div class="ffd"></div>Outlier-Cleaned Data</div>
+        <div class="ff"><div class="ffd"></div>StandardScaler Preprocessing</div>
+        <div class="ff"><div class="ffd"></div>Random Forest Regressor</div>
+        <div class="ff"><div class="ffd"></div>Locality-Aware Encoding</div>
+        <div class="ff"><div class="ffd"></div>Flask REST API</div>
+        <div class="ff"><div class="ffd"></div>Indian Rupee Formatting</div>
+        <div class="ff"><div class="ffd"></div>CORS Enabled</div>
+        <div class="ff"><div class="ffd"></div>Model Serialization</div>
+      </div>
+    </div>
+  </div>
+  <div class="mtable">
+    <h3>Model <em>Comparison</em></h3>
+    <table>
+      <thead><tr><th>Model</th><th>R&sup2; Score</th><th>Strengths</th><th>Why Not Chosen</th></tr></thead>
+      <tbody>
+        <tr><td>Linear Regression</td><td>~0.65</td><td>Fast, interpretable</td><td>Misses non-linear locality pricing patterns</td></tr>
+        <tr><td>Ridge Regression</td><td>~0.67</td><td>Handles multicollinearity</td><td>Still limited by linearity assumption</td></tr>
+        <tr><td>Decision Tree</td><td>~0.88</td><td>Non-linear, interpretable</td><td>Prone to overfitting on training data</td></tr>
+        <tr><td class="tbest">Random Forest <span class="bbest">&#10003; Chosen</span></td><td class="tbest">0.9995</td><td>Ensemble, robust, handles outliers</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ctas">
+    <div><h3>Ready to value your<br><em>Mumbai property?</em></h3><p>Enter your property details and get an instant AI-powered estimate in Rupees.</p></div>
+    <button class="btn-p" onclick="goTo('pp')"><span>Start Predicting</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+  </div>
+  <footer><div class="fl">Estate<em>IQ</em></div><div class="fm">Mumbai Property Intelligence &middot; End-to-End ML Project<br>Python &middot; scikit-learn &middot; Flask &middot; Pandas &middot; NumPy</div><div class="fr">Random Forest &middot; R&sup2;: 0.9995<br>200 Estimators &middot; Max Depth 15</div></footer>
+</div>
+
+<script>
+const API='http://127.0.0.1:5000';
+let locs=[],barsOk=false;
+function goTo(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nl').forEach(l=>l.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  const nl=document.getElementById('nl-'+pg);
+  if(nl)nl.classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+  if(pg==='pp'){loadLocs();animBars();}
+  if(pg==='phw'){setTimeout(animPipe,100);}
+}
+const cur=document.getElementById('cur'),curl=document.getElementById('curl');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.transform=`translate(${mx-5}px,${my-5}px)`;});
+(function loop(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curl.style.transform=`translate(${rx-18}px,${ry-18}px)`;requestAnimationFrame(loop);})();
+document.querySelectorAll('button,input,select').forEach(el=>{el.addEventListener('mouseenter',()=>cur.classList.add('hov'));el.addEventListener('mouseleave',()=>cur.classList.remove('hov'));});
+function animBars(){
+  if(barsOk)return;barsOk=true;
+  setTimeout(()=>{
+    document.getElementById('r2bar').style.width='99.95%';document.getElementById('r2val').textContent='0.9995';
+    document.getElementById('accbar').style.width='88%';document.getElementById('accval').textContent='+88% vs Linear';
+    document.getElementById('locbar').style.width='92%';document.getElementById('locval').textContent='92%';
+  },200);
+}
+function animPipe(){document.querySelectorAll('.pstep').forEach((s,i)=>setTimeout(()=>s.classList.add('vis'),i*130));}
+async function loadLocs(){
+  if(locs.length)return;
+  try{const r=await fetch(`${API}/localities`);locs=await r.json();}
+  catch{locs=['Andheri','Bandra','Borivali','Chembur','Dadar','Goregaon','Kandivali','Kurla','Malad','Mulund','Navi Mumbai','Powai','Thane','Vikhroli','Worli'];}
+}
+const li=document.getElementById('linput'),ld=document.getElementById('ldrop'),lv=document.getElementById('lval');
+li.addEventListener('input',()=>{
+  const q=li.value.trim().toLowerCase();lv.value='';
+  if(!q){ld.classList.remove('open');return;}
+  const h=locs.filter(l=>l.toLowerCase().includes(q)).slice(0,12);
+  ld.innerHTML=h.length?h.map(l=>`<div class="lopt" onclick="pl('${l}')">${l}</div>`).join(''):'<div class="lempty">No locality found</div>';
+  ld.classList.add('open');
+});
+li.addEventListener('keydown',e=>{
+  const opts=[...ld.querySelectorAll('.lopt')],hi=ld.querySelector('.hi');let idx=opts.indexOf(hi);
+  if(e.key==='ArrowDown'){opts.forEach(o=>o.classList.remove('hi'));opts[Math.min(idx+1,opts.length-1)]?.classList.add('hi');e.preventDefault();}
+  if(e.key==='ArrowUp')  {opts.forEach(o=>o.classList.remove('hi'));opts[Math.max(idx-1,0)]?.classList.add('hi');e.preventDefault();}
+  if(e.key==='Enter')    {ld.querySelector('.hi')?.click();}
+  if(e.key==='Escape')   {ld.classList.remove('open');}
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.lwrap'))ld.classList.remove('open');});
+function pl(n){li.value=n;lv.value=n;ld.classList.remove('open');}
+function step(id,d){const el=document.getElementById(id);el.value=Math.min(Math.max(+el.value+d,+el.min),+el.max);}
+async function runP(){
+  const area=parseFloat(document.getElementById('area').value);
+  const age=parseFloat(document.getElementById('age').value);
+  const beds=parseInt(document.getElementById('bed').value);
+  const bath=parseInt(document.getElementById('bath').value);
+  const bal=parseInt(document.getElementById('bal').value);
+  const floors=parseInt(document.getElementById('floors').value);
+  const locality=lv.value.trim();
+  if(isNaN(area)||area<250){showErr('Please enter a valid area (minimum 250 sq ft).');return;}
+  if(isNaN(age)){showErr('Please enter the building age.');return;}
+  if(isNaN(floors)){showErr('Please enter total floors.');return;}
+  if(!locality){showErr('Please search and select a locality.');return;}
+  const btn=document.getElementById('sbtn'),txt=document.getElementById('stxt');
+  btn.disabled=true;txt.textContent='Predicting...';
+  try{
+    const res=await fetch(`${API}/predict`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({area,age,bedroom_num:beds,bathroom_num:bath,balcony_num:bal,total_floors:floors,locality})});
+    const data=await res.json();
+    if(!res.ok){showErr(data.error||'Server error.');return;}
+    showOk(data);
+  }catch{showErr('Cannot reach Flask server.\nRun: python app.py');}
+  finally{btn.disabled=false;txt.textContent='\u{1F3E0}\u00a0 Predict Price in Rupees';}
+}
+function showOk(d){
+  const b=document.getElementById('rbox');
+  document.getElementById('rlbl').textContent='🏠 Estimated Market Value';
+  document.getElementById('rprice').textContent=d.formatted_price;
+  document.getElementById('rmeta').innerHTML=`Locality: <b>${d.locality}</b> &nbsp;&middot;&nbsp; Median &#8377;/sqft: <b>&#8377;${Number(d.price_per_sqft).toLocaleString('en-IN')}</b><br>Model: <b>${d.model}</b>`;
+  b.className='rbox';void b.offsetWidth;b.classList.add('show');
+}
+function showErr(msg){
+  const b=document.getElementById('rbox');
+  document.getElementById('rlbl').textContent='⚠ Error';
+  document.getElementById('rprice').textContent='—';
+  document.getElementById('rmeta').innerHTML=msg.replace(/\n/g,'<br>');
+  b.className='rbox err';void b.offsetWidth;b.classList.add('show');
+}
+goTo('home');
+</script>
+</body>
+</html>

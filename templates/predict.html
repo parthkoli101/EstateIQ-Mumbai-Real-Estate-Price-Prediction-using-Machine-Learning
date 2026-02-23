@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EstateIQ — Price Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --ink:#08070A;--surface:#0F0D14;--card:#161320;
+      --accent:#E8C547;--accent2:#F0D875;
+      --green:#3BBFB0;--rose:#C7506A;
+      --text:#EDE8F5;--muted:#7A7390;
+      --border:rgba(232,197,71,0.15);
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;cursor:none}
+
+    #cur{position:fixed;width:10px;height:10px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference}
+    #cur2{position:fixed;width:36px;height:36px;border:1px solid rgba(232,197,71,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .45s cubic-bezier(.16,1,.3,1)}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:20px 64px;background:rgba(15,13,20,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+    .logo{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:var(--text);text-decoration:none}
+    .logo b{color:var(--accent)}
+    nav ul{list-style:none;display:flex;gap:32px}
+    nav ul a{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .25s}
+    nav ul a:hover,nav ul a.active{color:var(--accent)}
+    .nav-back{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .25s}
+    .nav-back:hover{color:var(--accent)}
+
+    /* MAIN LAYOUT */
+    main{padding-top:80px;min-height:100vh;display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 80px)}
+
+    /* LEFT PANEL */
+    .left-panel{background:var(--ink);border-right:1px solid var(--border);padding:56px 48px;display:flex;flex-direction:column;gap:0;position:sticky;top:80px;height:calc(100vh - 80px);overflow-y:auto}
+
+    .panel-label{font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+    .panel-label::before{content:'';width:28px;height:1px;background:var(--accent)}
+    .panel-h{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;line-height:1.05;letter-spacing:-.02em}
+    .panel-h em{font-style:italic;color:var(--accent)}
+    .panel-sub{font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:16px}
+
+    .input-section{margin-top:40px}
+    .isec-title{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+    .form-group{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+    input[type=number],input[type=text]{
+      background:rgba(255,255,255,.04);border:1px solid rgba(232,197,71,.14);
+      color:var(--text);padding:13px 15px;
+      font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:300;
+      outline:none;transition:all .25s;width:100%;
+    }
+    input::placeholder{color:rgba(122,115,144,.5)}
+    input:focus{border-color:var(--accent);background:rgba(232,197,71,.05)}
+
+    .stepper{display:flex;align-items:center;border:1px solid rgba(232,197,71,.14);background:rgba(255,255,255,.04);transition:border-color .25s}
+    .stepper:focus-within{border-color:var(--accent)}
+    .sbtn{width:44px;height:46px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s;flex-shrink:0}
+    .sbtn:hover{color:var(--accent)}
+    .stepper input{border:none;background:none;text-align:center;flex:1;font-size:.92rem;color:var(--text);padding:13px 0}
+    .stepper input:focus{background:none;border:none}
+
+    /* Locality */
+    .loc-wrap{position:relative}
+    #locInput{cursor:text}
+    .loc-dd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:300;background:#18141F;border:1px solid var(--border);max-height:200px;overflow-y:auto;display:none;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .loc-dd.open{display:block}
+    .loc-opt{padding:11px 15px;font-size:.83rem;cursor:pointer;border-bottom:1px solid rgba(232,197,71,.06);transition:background .15s}
+    .loc-opt:hover,.loc-opt.hi{background:rgba(232,197,71,.1);color:var(--accent)}
+    .loc-empty{padding:14px;color:var(--muted);font-size:.78rem;text-align:center}
+
+    /* Predict button */
+    .btn-predict{width:100%;margin-top:28px;padding:18px;background:linear-gradient(135deg,var(--accent) 0%,#C49A1A 100%);color:var(--ink);border:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+    .btn-predict::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent2),var(--accent));opacity:0;transition:opacity .3s}
+    .btn-predict:hover::before{opacity:1}
+    .btn-predict:disabled{opacity:.6;cursor:not-allowed}
+    .btn-predict span{position:relative;z-index:1}
+
+    /* RIGHT PANEL */
+    .right-panel{padding:56px 64px;display:flex;flex-direction:column;gap:40px}
+
+    /* Result hero */
+    .result-hero{border:1px solid var(--border);background:var(--card);padding:56px;position:relative;overflow:hidden;min-height:260px;display:flex;flex-direction:column;justify-content:center}
+    .result-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(232,197,71,.05) 0%,transparent 60%)}
+    .result-hero.active::before{background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(59,191,176,.08) 0%,transparent 60%)}
+    .rh-label{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .rh-label.ready{color:var(--green)}
+    .rh-price{font-family:'Fraunces',serif;font-size:clamp(2.8rem,5vw,4.5rem);font-weight:900;line-height:1;color:var(--text);letter-spacing:-.02em;transition:all .4s}
+    .rh-price.filled{color:var(--accent)}
+    .rh-sub{font-size:.72rem;color:var(--muted);margin-top:16px;line-height:1.75}
+    .rh-sub span{color:var(--text)}
+    .pulse-ring{position:absolute;right:48px;top:50%;transform:translateY(-50%);width:80px;height:80px;border:1px solid rgba(59,191,176,.2);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:2rem}
+    .pulse-ring.visible{display:flex;animation:pRing 2s ease-in-out infinite}
+    @keyframes pRing{0%,100%{transform:translateY(-50%) scale(1);opacity:1}50%{transform:translateY(-50%) scale(1.08);opacity:.6}}
+
+    /* Breakdown cards */
+    .breakdown-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .bd-card{border:1px solid var(--border);background:var(--card);padding:28px 24px;transition:border-color .3s}
+    .bd-card:hover{border-color:rgba(232,197,71,.3)}
+    .bd-val{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:700;color:var(--accent);line-height:1}
+    .bd-lbl{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+    /* Property summary */
+    .prop-summary{border:1px solid var(--border);background:var(--card);padding:36px}
+    .ps-title{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    .ps-item .ps-val{font-size:1rem;font-weight:500;color:var(--text)}
+    .ps-item .ps-lbl{font-size:.6rem;color:var(--muted);margin-top:4px;letter-spacing:.08em;text-transform:uppercase}
+
+    /* Range insight */
+    .range-card{border:1px solid var(--border);background:var(--card);padding:36px}
+    .range-bar-wrap{margin-top:20px;position:relative}
+    .range-track{height:4px;background:rgba(255,255,255,.08);border-radius:2px;position:relative}
+    .range-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width 1s ease}
+    .range-pointer{position:absolute;top:-10px;width:24px;height:24px;background:var(--accent);border-radius:50%;transform:translateX(-50%);transition:left 1s ease;display:flex;align-items:center;justify-content:center}
+    .range-pointer::after{content:'';width:8px;height:8px;background:var(--ink);border-radius:50%}
+    .range-labels{display:flex;justify-content:space-between;margin-top:12px}
+    .range-labels span{font-size:.62rem;color:var(--muted)}
+
+    /* Empty state */
+    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center;border:1px dashed rgba(232,197,71,.12);gap:16px}
+    .es-icon{font-size:3rem;opacity:.4}
+    .es-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:var(--muted)}
+    .es-sub{font-size:.75rem;color:var(--muted);line-height:1.7;max-width:320px}
+
+    @media(max-width:1024px){
+      nav{padding:16px 20px}nav ul{display:none}
+      main{grid-template-columns:1fr;padding-top:72px}
+      .left-panel{position:static;height:auto;padding:32px 20px}
+      .right-panel{padding:32px 20px}
+      .breakdown-grid{grid-template-columns:1fr 1fr}
+      .ps-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+<div id="cur"></div><div id="cur2"></div>
+
+<nav>
+  <a href="index.html" class="logo">Estate<b>IQ</b></a>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="predict.html" class="active">Predict</a></li>
+    <li><a href="insights.html">Insights</a></li>
+    <li><a href="model.html">Model</a></li>
+  </ul>
+  <a href="index.html" class="nav-back">← Back to Home</a>
+</nav>
+
+<main>
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="panel-label">Property Valuation</div>
+    <h1 class="panel-h">Predict Your<br><em>Mumbai Price</em></h1>
+    <p class="panel-sub">Fill in the property details. Our Random Forest model will estimate the market value using real Mumbai housing data.</p>
+
+    <div class="input-section">
+      <div class="isec-title">Property Details</div>
+
+      <div class="form-group">
+        <label>Area (sq ft)</label>
+        <input type="number" id="area" placeholder="e.g. 950" min="250" max="5000"/>
+      </div>
+      <div class="form-group">
+        <label>Building Age (years)</label>
+        <input type="number" id="age" placeholder="e.g. 5" min="0" max="80"/>
+      </div>
+      <div class="form-group">
+        <label>Total Floors in Building</label>
+        <input type="number" id="total_floors" placeholder="e.g. 12" min="1" max="60"/>
+      </div>
+
+      <div class="isec-title" style="margin-top:28px">Rooms & Spaces</div>
+
+      <div class="form-group">
+        <label>Bedrooms</label>
+        <div class="stepper"><button class="sbtn" onclick="step('bedroom_num',-1)">−</button><input type="number" id="bedroom_num" value="2" min="1" max="10" readonly/><button class="sbtn" onclick="step('bedroom_num',1)">+</button></div>
+      </div>
+      <div class="form-group">
+        <label>Bathrooms</label>
+        <div class="stepper"><button class="sbtn" onclick="step('bathroom_num',-1)">−</button><input type="number" id="bathroom_num" value="2" min="1" max="10" readonly/><button class="sbtn" onclick="step('bathroom_num',1)">+</button></div>
+      </div>
+      <div class="form-group">
+        <label>Balconies</label>
+        <div class="stepper"><button class="sbtn" onclick="step('balcony_num',-1)">−</button><input type="number" id="balcony_num" value="1" min="0" max="5" readonly/><button class="sbtn" onclick="step('balcony_num',1)">+</button></div>
+      </div>
+
+      <div class="isec-title" style="margin-top:28px">Location</div>
+
+      <div class="form-group">
+        <label>Locality / Area</label>
+        <div class="loc-wrap">
+          <input type="text" id="locInput" placeholder="Search: Andheri, Bandra, Powai..." autocomplete="off"/>
+          <div class="loc-dd" id="locDD"></div>
+        </div>
+        <input type="hidden" id="locVal"/>
+      </div>
+
+      <button class="btn-predict" id="predictBtn" onclick="runPredict()"><span>🏠 &nbsp;Estimate Property Value</span></button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <!-- Result hero -->
+    <div class="result-hero" id="resultHero">
+      <div class="pulse-ring" id="pulseRing">🏠</div>
+      <div class="rh-label" id="rhLabel">Awaiting your property details</div>
+      <div class="rh-price" id="rhPrice">Enter details →</div>
+      <div class="rh-sub" id="rhSub">Fill in the form on the left and click <span>Estimate Property Value</span> to get an AI-powered price prediction.</div>
+    </div>
+
+    <!-- Breakdown (hidden until result) -->
+    <div id="breakdownSection" style="display:none">
+      <div class="breakdown-grid">
+        <div class="bd-card"><div class="bd-val" id="bdPPSF">—</div><div class="bd-lbl">Price / Sq Ft</div></div>
+        <div class="bd-card"><div class="bd-val" id="bdLoc">—</div><div class="bd-lbl">Locality</div></div>
+        <div class="bd-card"><div class="bd-val" id="bdModel">RF</div><div class="bd-lbl">Model Used</div></div>
+      </div>
+
+      <div class="prop-summary">
+        <div class="ps-title"><span>Your Property Summary</span><span style="color:var(--accent);font-size:.65rem" id="psTimestamp"></span></div>
+        <div class="ps-grid">
+          <div class="ps-item"><div class="ps-val" id="psArea">—</div><div class="ps-lbl">Area (sq ft)</div></div>
+          <div class="ps-item"><div class="ps-val" id="psBed">—</div><div class="ps-lbl">Bedrooms</div></div>
+          <div class="ps-item"><div class="ps-val" id="psBath">—</div><div class="ps-lbl">Bathrooms</div></div>
+          <div class="ps-item"><div class="ps-val" id="psBal">—</div><div class="ps-lbl">Balconies</div></div>
+          <div class="ps-item"><div class="ps-val" id="psAge">—</div><div class="ps-lbl">Age (yrs)</div></div>
+          <div class="ps-item"><div class="ps-val" id="psFloors">—</div><div class="ps-lbl">Total Floors</div></div>
+          <div class="ps-item" style="grid-column:span 2"><div class="ps-val" id="psLocality">—</div><div class="ps-lbl">Locality</div></div>
+        </div>
+      </div>
+
+      <div class="range-card">
+        <div class="ps-title">Market Position</div>
+        <div style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-bottom:4px">Your property's estimated position within the Mumbai market range.</div>
+        <div class="range-bar-wrap">
+          <div class="range-track">
+            <div class="range-fill" id="rangeFill" style="width:0%"></div>
+            <div class="range-pointer" id="rangePointer" style="left:0%"></div>
+          </div>
+          <div class="range-labels"><span>₹10 Lakh</span><span>₹5 Crore</span><span>₹10 Crore+</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state when nothing predicted -->
+    <div class="empty-state" id="emptyState">
+      <div class="es-icon">📍</div>
+      <div class="es-title">Your prediction will appear here</div>
+      <p class="es-sub">Fill in the property details on the left. The AI model will break down estimated price, locality pricing, and market position.</p>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const API='http://127.0.0.1:5000';
+let allLocalities=[];
+
+// Cursor
+const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function loop(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;cur2.style.left=rx+'px';cur2.style.top=ry+'px';requestAnimationFrame(loop)})();
+
+// Load localities
+async function loadLoc(){
+  try{const r=await fetch(`${API}/localities`);allLocalities=await r.json()}
+  catch{allLocalities=['Andheri','Bandra','Borivali','Dadar','Goregaon','Kandivali','Kurla','Malad','Mulund','Nalasopara','Powai','Thane','Vikhroli','Worli']}
+}
+loadLoc();
+
+// Stepper
+function step(id,d){const e=document.getElementById(id);e.value=Math.min(Math.max(+e.value+d,+e.min),+e.max)}
+
+// Locality search
+const locInput=document.getElementById('locInput'),locDD=document.getElementById('locDD'),locVal=document.getElementById('locVal');
+locInput.addEventListener('input',()=>{
+  const q=locInput.value.trim().toLowerCase();locVal.value='';
+  if(!q){locDD.classList.remove('open');return}
+  const m=allLocalities.filter(l=>l.toLowerCase().includes(q)).slice(0,12);
+  locDD.innerHTML=m.length?m.map(l=>`<div class="loc-opt" onclick="selLoc('${l}')">${l}</div>`).join(''):'<div class="loc-empty">No locality found</div>';
+  locDD.classList.add('open');
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.loc-wrap'))locDD.classList.remove('open')});
+function selLoc(n){locInput.value=n;locVal.value=n;locDD.classList.remove('open')}
+
+// Predict
+async function runPredict(){
+  const area=parseFloat(document.getElementById('area').value);
+  const age=parseFloat(document.getElementById('age').value);
+  const bedroom_num=parseInt(document.getElementById('bedroom_num').value);
+  const bathroom_num=parseInt(document.getElementById('bathroom_num').value);
+  const balcony_num=parseInt(document.getElementById('balcony_num').value);
+  const total_floors=parseInt(document.getElementById('total_floors').value);
+  const locality=locVal.value.trim();
+
+  if(isNaN(area)||area<250){showErr('Enter a valid area (min 250 sq ft)');return}
+  if(isNaN(age)){showErr('Enter building age');return}
+  if(isNaN(total_floors)){showErr('Enter total floors');return}
+  if(!locality){showErr('Search and select a locality');return}
+
+  const btn=document.getElementById('predictBtn');
+  btn.disabled=true;btn.querySelector('span').textContent='⏳  Running model...';
+
+  try{
+    const res=await fetch(`${API}/predict`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({area,age,bedroom_num,bathroom_num,balcony_num,total_floors,locality})});
+    const data=await res.json();
+    if(!res.ok){showErr(data.error||'API error');return}
+    showResult(data,{area,age,bedroom_num,bathroom_num,balcony_num,total_floors,locality});
+  }catch{showErr('Cannot reach Flask server.\nRun: python app.py')}
+  finally{btn.disabled=false;btn.querySelector('span').textContent='🏠  Estimate Property Value'}
+}
+
+function showResult(data,inputs){
+  // Hero
+  const hero=document.getElementById('resultHero');
+  hero.classList.add('active');
+  document.getElementById('rhLabel').textContent='🎯 Estimated Market Price';
+  document.getElementById('rhLabel').className='rh-label ready';
+  document.getElementById('rhPrice').textContent=data.formatted_price;
+  document.getElementById('rhPrice').className='rh-price filled';
+  document.getElementById('rhSub').innerHTML=`Locality: <span>${data.locality}</span> &nbsp;·&nbsp; Price/sqft: <span>₹${Number(data.price_per_sqft).toLocaleString('en-IN')}</span> &nbsp;·&nbsp; <span>${data.model}</span>`;
+  document.getElementById('pulseRing').classList.add('visible');
+
+  // Breakdown
+  document.getElementById('breakdownSection').style.display='flex';
+  document.getElementById('breakdownSection').style.flexDirection='column';
+  document.getElementById('breakdownSection').style.gap='16px';
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('bdPPSF').textContent='₹'+Number(data.price_per_sqft).toLocaleString('en-IN');
+  document.getElementById('bdLoc').textContent=data.locality;
+  document.getElementById('psArea').textContent=inputs.area;
+  document.getElementById('psBed').textContent=inputs.bedroom_num+'BHK';
+  document.getElementById('psBath').textContent=inputs.bathroom_num;
+  document.getElementById('psBal').textContent=inputs.balcony_num;
+  document.getElementById('psAge').textContent=inputs.age;
+  document.getElementById('psFloors').textContent=inputs.total_floors;
+  document.getElementById('psLocality').textContent=inputs.locality;
+  document.getElementById('psTimestamp').textContent='Predicted '+new Date().toLocaleTimeString();
+
+  // Range bar
+  const minP=1000000,maxP=100000000;
+  const pct=Math.min(Math.max((data.predicted_price-minP)/(maxP-minP),0),1)*100;
+  setTimeout(()=>{
+    document.getElementById('rangeFill').style.width=pct+'%';
+    document.getElementById('rangePointer').style.left=pct+'%';
+  },200);
+}
+
+function showErr(msg){
+  const hero=document.getElementById('resultHero');
+  hero.classList.remove('active');
+  document.getElementById('rhLabel').textContent='⚠ Error';
+  document.getElementById('rhLabel').className='rh-label';
+  document.getElementById('rhPrice').textContent='—';
+  document.getElementById('rhPrice').className='rh-price';
+  document.getElementById('rhSub').innerHTML=msg.replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
